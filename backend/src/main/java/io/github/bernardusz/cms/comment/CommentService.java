@@ -1,6 +1,7 @@
 package io.github.bernardusz.cms.comment;
 
 import io.github.bernardusz.cms.comment.dto.CommentCreation;
+import io.github.bernardusz.cms.comment.dto.CommentDetail;
 import io.github.bernardusz.cms.comment.dto.CommentUpdate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +23,8 @@ public class CommentService {
   }
 
   @Transactional(readOnly = true)
-  public List<Comment> findPagination(Long contentId, int limit, int offsets) {
-    return commentRepository.findPagination(contentId, limit, offsets);
+  public List<CommentDetail> findPagination(Long contentId, Long userId, int limit, int offsets) {
+    return commentRepository.findPagination(contentId, userId, limit, offsets);
   }
 
   @Transactional
@@ -37,22 +38,22 @@ public class CommentService {
   }
 
   @Transactional
-  public void increaseLike(Long id) {
-    commentRepository.increaseLike(id);
+  public void increaseLike(Long commentId, Long userId) {
+    commentRepository.increaseLike(commentId, userId);
   }
 
   @Transactional
-  public void decreaseLike(Long id) {
-    commentRepository.decreaseLike(id);
+  public void decreaseLike(Long commentId, Long userId) {
+    commentRepository.decreaseLike(commentId, userId);
   }
 
   @Transactional
-  public void increaseDislike(Long id) {
-    commentRepository.increaseDislike(id);
+  public void increaseDislike(Long commentId, Long userId) {
+    commentRepository.increaseDislike(commentId, userId);
   }
 
   @Transactional
-  public void decreaseDislike(Long id) {
-    commentRepository.decreaseDislike(id);
+  public void decreaseDislike(Long commentId, Long userId) {
+    commentRepository.decreaseDislike(commentId, userId);
   }
 }

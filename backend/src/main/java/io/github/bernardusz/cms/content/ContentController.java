@@ -5,7 +5,11 @@ import io.github.bernardusz.cms.content.dto.ContentDetail;
 import io.github.bernardusz.cms.content.dto.ContentSummary;
 import io.github.bernardusz.cms.content.dto.ContentUpdate;
 import io.github.bernardusz.cms.exception.exceptions.FailedCreatingContent;
+import io.github.bernardusz.cms.user.UserSecurity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -51,9 +55,9 @@ public class ContentController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<ContentDetail> findById(@PathVariable Long id) {
+  public ResponseEntity<ContentDetail> findById(@PathVariable Long id, @AuthenticationPrincipal UserSecurity user) {
     return ResponseEntity.ok(
-        contentService.findById(id)
+        contentService.findById(id, user.getId())
     );
   }
 
@@ -70,26 +74,38 @@ public class ContentController {
   }
 
   @PostMapping("/{id}/like")
-  public ResponseEntity<Void> increaseLike(@PathVariable Long id) {
-    contentService.increaseLike(id);
+  public ResponseEntity<Void> increaseLike(
+      @PathVariable Long id,
+      @AuthenticationPrincipal UserSecurity user
+  ) {
+    contentService.increaseLike(id, user.getId());
     return ResponseEntity.ok().build();
   }
 
   @DeleteMapping("/{id}/like")
-  public ResponseEntity<Void> decreaseLike(@PathVariable Long id) {
-    contentService.decreaseLike(id);
+  public ResponseEntity<Void> decreaseLike(
+      @PathVariable Long id,
+      @AuthenticationPrincipal UserSecurity user
+  ) {
+    contentService.decreaseLike(id, user.getId());
     return ResponseEntity.ok().build();
   }
 
   @PostMapping("/{id}/dislike")
-  public ResponseEntity<Void> increaseDislike(@PathVariable Long id) {
-    contentService.increaseDislike(id);
+  public ResponseEntity<Void> increaseDislike(
+      @PathVariable Long id,
+      @AuthenticationPrincipal UserSecurity user
+  ) {
+    contentService.increaseDislike(id, user.getId());
     return ResponseEntity.ok().build();
   }
 
   @DeleteMapping("/{id}/dislike")
-  public ResponseEntity<Void> decreaseDislike(@PathVariable Long id) {
-    contentService.decreaseDislike(id);
+  public ResponseEntity<Void> decreaseDislike(
+      @PathVariable Long id,
+      @AuthenticationPrincipal UserSecurity user
+  ) {
+    contentService.decreaseDislike(id, user.getId());
     return ResponseEntity.ok().build();
   }
 }

@@ -66,24 +66,29 @@ public class ContentRepository {
         .list();
   }
 
-  public Optional<ContentDetail> findById(Long id){
+  public Optional<ContentDetail> findById(Long id, Long userId){
     return jdbcClient.sql(
         """
         SELECT
-          id,
-          title,
-          description,
-          content,
-          created_at,
-          updated_at,
-          comments_count,
-          likes_count,
-          dislikes_count,
-          user_id
-        FROM contents
-        WHERE id = :id
+          c.id,
+          c.title,
+          c.description,
+          c.content,
+          c.created_at,
+          c.updated_at,
+          c.comments_count,
+          c.likes_count,
+          c.dislikes_count,
+          c.user_id,
+          cl.user_id IS NOT NULL AS alreadyLiked,
+          cd.user_id IS NOT NULL AS alreadyDisliked
+        FROM contents c
+        LEFT JOIN content_likes cl ON c.id = cl.content_id AND cl.user_id = :userId
+        LEFT JOIN content_dislikes cd ON c.id = cd.content_id AND cd.user_id = :userId
+        WHERE c.id = :id
         """
     ).param("id", id)
+        .param("userId", userId)
         .query(ContentDetail.class)
         .optional();
   }
@@ -117,47 +122,85 @@ public class ContentRepository {
         .update();
   }
 
-  public void increaseLike(Long id){
+  public void increaseLike(Long contentId, Long userId){
     jdbcClient.sql(
         """
-        UPDATE contents SET
-        SET likes_count = COALESCE(likes_count, 0) + 1
-        WHERE id = :id
+        WITH deleted_dislike AS (
+            DELETE FROM content_dislikes
+            WHERE content_id = :contentId AND user_id = :userId
+            RETURNING 1
+        ),
+        inserted_like AS (
+            INSERT INTO content_likes (content_id, user_id)
+            VALUES (:contentId, :userId)
+            ON CONFLICT (content_id, user_id) DO NOTHING
+            RETURNING 1
+        )
+        UPDATE contents
+        SET likes_count = COALESCE(likes_count, 0) + (SELECT COUNT(*) FROM inserted_like),
+            dislikes_count = GREATEST(COALESCE(dislikes_count, 0) - (SELECT COUNT(*) FROM deleted_dislike), 0)
+        WHERE id = :contentId
         """
-    ).param("id", id)
+    ).param("contentId", contentId)
+        .param("userId", userId)
         .update();
   }
 
-  public void decreaseLike(Long id){
+  public void decreaseLike(Long contentId, Long userId){
     jdbcClient.sql(
         """
-        UPDATE contents SET
-        SET likes_count = COALESCE(likes_count, 0) - 1
-        WHERE id = :id
+        WITH deleted_like AS (
+          DELETE FROM content_likes
+          WHERE content_id = :contentId AND user_id = :userId
+          RETURNING 1
+        )
+        UPDATE contents
+            likes_count = GREATEST(COALESCE(likes_count, 0) - (SELECT COUNT(*) FROM deleted_like), 0)
+        WHERE id = :contentId
         """
-    ).param("id", id)
+    ).param("contentId", contentId)
+        .param("userId", userId)
     .update();
   }
 
-  public void increaseDislike(Long id){
+  public void increaseDislike(Long contentId, Long userId){
     jdbcClient.sql(
       """
-      UPDATE contents SET
-      SET dislikes_count = COALESCE(dislikes_count, 0) + 1
-      WHERE id = :id
+      WITH deleted_like AS (
+          DELETE FROM content_likes
+          WHERE content_id = :contentId AND user_id = :userId
+          RETURNING 1
+      ),
+      inserted_dislike AS (
+          INSERT INTO content_dislikes (content_id, user_id)
+          VALUES (:contentId, :userId)
+          ON CONFLICT (content_id, user_id) DO NOTHING
+          RETURNING 1
+      )
+      UPDATE contents
+      SET dislikes_count = COALESCE(dislikes_count, 0) + (SELECT COUNT(*) FROM inserted_dislike),
+          likes_count = GREATEST(COALESCE(likes_count, 0) - (SELECT COUNT(*) FROM deleted_like), 0)
+      WHERE id = :contentId
       """
-  ).param("id", id)
+  ).param("contentId", contentId)
+        .param("userId", userId)
   .update();
   }
 
-  public void decreaseDislike(Long id){
+  public void decreaseDislike(Long contentId, Long userId){
     jdbcClient.sql(
       """
-      UPDATE contents SET
-      SET dislikes_count = COALESCE(dislikes_count, 0) - 1
-      WHERE id = :id
+      WITH deleted_dislike AS (
+        DELETE FROM content_dislikes
+        WHERE content_id = :contentId AND user_id = :userId
+        RETURNING 1
+      )
+      UPDATE contents
+          dislikes_count = GREATEST(COALESCE(dislikes_count, 0) - (SELECT COUNT(*) FROM deleted_dislike), 0)
+      WHERE id = :contentId
       """
-  ).param("id", id)
+  ).param("contentId", contentId)
+        .param("userId", userId)
   .update();
   }
 

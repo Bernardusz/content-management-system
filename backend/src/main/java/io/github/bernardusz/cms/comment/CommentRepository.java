@@ -1,6 +1,7 @@
 package io.github.bernardusz.cms.comment;
 
 import io.github.bernardusz.cms.comment.dto.CommentCreation;
+import io.github.bernardusz.cms.comment.dto.CommentDetail;
 import io.github.bernardusz.cms.comment.dto.CommentUpdate;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -32,21 +33,36 @@ public class CommentRepository {
         .optional();
   }
 
-  public List<Comment> findPagination(Long contentId, int limit, int offsets){
+  public List<CommentDetail> findPagination(Long contentId, Long userId, int limit, int offsets){
     return jdbcClient.sql(
         """
-        SELECT * FROM comments
-        WHERE content_id = :contentId
+        SELECT
+          c.id,
+          c.title,
+          c.content,
+          c.created_at,
+          c.edited,
+          c.likes_count,
+          c.dislikes_count,
+          c.user_id,
+          c.content_id,
+          cl.user_id IS NOT NULL AS alreadyLiked,
+          cd.user_id IS NOT NULL AS alreadyDisliked
+        FROM comments c
+       LEFT JOIN comment_likes cl ON c.id = cl.comment_id AND cl.user_id = :userId
+       LEFT JOIN comment_dislikes cd ON c.id = cd.comment_id AND cd.user_id = :userId
+        WHERE c.content_id = :contentId
         ORDER BY
-          likes_count DESC,
-          dislikes_count ASC,
-          updated_at DESC
+          c.likes_count DESC,
+          c.dislikes_count ASC,
+          c.updated_at DESC
         LIMIT :limit OFFSET :offsets;
         """
     ).param("contentId", contentId)
+        .param("userId", userId)
         .param("limit", limit)
         .param("offsets", offsets)
-        .query(Comment.class)
+        .query(CommentDetail.class)
         .list();
   }
 
@@ -72,47 +88,85 @@ public class CommentRepository {
     ).param("id", id).update();
   }
 
-  public void increaseLike(Long id){
+  public void increaseLike(Long commentId, Long userId){
     jdbcClient.sql(
-            """
-            UPDATE comments SET
-            SET likes_count = COALESCE(likes_count, 0) + 1
-            WHERE id = :id
-            """
-        ).param("id", id)
+        """
+        WITH deleted_dislike AS (
+            DELETE FROM comment_dislikes
+            WHERE comment_id = :commentId AND user_id = :userId
+            RETURNING 1
+        ),
+        inserted_like AS (
+            INSERT INTO comment_likes (comment_id, user_id)
+            VALUES (:commentId, :userId)
+            ON CONFLICT (comment_id, user_id) DO NOTHING
+            RETURNING 1
+        )
+        UPDATE comments
+        SET likes_count = COALESCE(likes_count, 0) + (SELECT COUNT(*) FROM inserted_like),
+            dislikes_count = GREATEST(COALESCE(dislikes_count, 0) - (SELECT COUNT(*) FROM deleted_dislike), 0)
+        WHERE id = :commentId
+        """
+    ).param("commentId", commentId)
+        .param("userId", userId)
         .update();
   }
 
-  public void decreaseLike(Long id){
+  public void decreaseLike(Long commentId, Long userId){
     jdbcClient.sql(
-            """
-            UPDATE comments SET
-            SET likes_count = COALESCE(likes_count, 0) - 1
-            WHERE id = :id
-            """
-        ).param("id", id)
+        """
+        WITH deleted_like AS (
+          DELETE FROM comment_likes
+          WHERE comment_id = :commentId AND user_id = :userId
+          RETURNING 1
+        )
+        UPDATE comments
+            likes_count = GREATEST(COALESCE(likes_count, 0) - (SELECT COUNT(*) FROM deleted_like), 0)
+        WHERE id = :commentId
+        """
+    ).param("commentId", commentId)
+        .param("userId", userId)
         .update();
   }
 
-  public void increaseDislike(Long id){
+  public void increaseDislike(Long commentId, Long userId){
     jdbcClient.sql(
-            """
-            UPDATE comments SET
-            SET dislikes_count = COALESCE(dislikes_count, 0) + 1
-            WHERE id = :id
-            """
-        ).param("id", id)
-        .update();
+      """
+      WITH deleted_like AS (
+          DELETE FROM comment_likes
+          WHERE comment_id = :commentId AND user_id = :userId
+          RETURNING 1
+      ),
+      inserted_dislike AS (
+          INSERT INTO comment_dislikes (comment_id, user_id)
+          VALUES (:commentId, :userId)
+          ON CONFLICT (comment_id, user_id) DO NOTHING
+          RETURNING 1
+      )
+      UPDATE comments
+      SET dislikes_count = COALESCE(dislikes_count, 0) + (SELECT COUNT(*) FROM inserted_dislike),
+          likes_count = GREATEST(COALESCE(likes_count, 0) - (SELECT COUNT(*) FROM deleted_like), 0)
+      WHERE id = :commentId
+      """
+  ).param("commentId", commentId)
+        .param("userId", userId)
+  .update();
   }
 
-  public void decreaseDislike(Long id){
+  public void decreaseDislike(Long commentId, Long userId){
     jdbcClient.sql(
-            """
-            UPDATE comments SET
-            SET dislikes_count = COALESCE(dislikes_count, 0) - 1
-            WHERE id = :id
-            """
-        ).param("id", id)
-        .update();
+      """
+      WITH deleted_dislike AS (
+        DELETE FROM comment_dislikes
+        WHERE comment_id = :commentId AND user_id = :userId
+        RETURNING 1
+      )
+      UPDATE comments
+          dislikes_count = GREATEST(COALESCE(dislikes_count, 0) - (SELECT COUNT(*) FROM deleted_dislike), 0)
+      WHERE id = :commentId
+      """
+  ).param("commentId", commentId)
+        .param("userId", userId)
+  .update();
   }
 }

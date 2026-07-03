@@ -29,8 +29,8 @@ public class ContentService {
   }
 
   @Transactional(readOnly = true)
-  public ContentDetail findById(Long id){
-    return contentRepository.findById(id).orElseThrow(
+  public ContentDetail findById(Long id, Long userId){
+    return contentRepository.findById(id, userId).orElseThrow(
         () -> new ContentNotFound("Content isn't found")
     );
   }
@@ -46,22 +46,22 @@ public class ContentService {
   }
 
   @Transactional
-  public void increaseLike(Long id){
-    contentRepository.increaseLike(id);
+  public void increaseLike(Long contentId, Long userId){
+    contentRepository.increaseLike(contentId, userId);
   }
 
   @Transactional
-  public void decreaseLike(Long id){
-    contentRepository.decreaseLike(id);
+  public void decreaseLike(Long contentId, Long userId){
+    contentRepository.decreaseLike(contentId, userId);
   }
 
   @Transactional
-  public void increaseDislike(Long id){
-    contentRepository.increaseDislike(id);
+  public void increaseDislike(Long contentId, Long userId){
+    contentRepository.increaseDislike(contentId, userId);
   }
 
   @Transactional
-  public void decreaseDislike(Long id){
-    contentRepository.decreaseDislike(id);
+  public void decreaseDislike(Long contentId, Long userId){
+    contentRepository.decreaseDislike(contentId, userId);
   }
 }

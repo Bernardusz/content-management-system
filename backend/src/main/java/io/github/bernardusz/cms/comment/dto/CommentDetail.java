@@ -1,18 +1,17 @@
-package io.github.bernardusz.cms.content.dto;
+package io.github.bernardusz.cms.comment.dto;
 
 import java.time.LocalDateTime;
 
-public record ContentDetail(
+public record CommentDetail(
     Long id,
     String title,
-    String description,
     String content,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt,
-    Long commentsCount,
+    LocalDateTime edited,
     Long likesCount,
     Long dislikesCount,
     Long userId,
+    Long contentId,
     boolean alreadyLiked,
     boolean alreadyDisliked
 ) { }
