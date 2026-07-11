@@ -64,9 +64,4 @@ export const routeMeta: RouteMeta = {
 		</section>
 	`,
 })
-export default class AppSignupPage {
-    private authService = inject(AuthService);
-    private router = inject(Router);
-
-    isSubmitting = signal(false);
-}
+export default class AppSignupPage {}

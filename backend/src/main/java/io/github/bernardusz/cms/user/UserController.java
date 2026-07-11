@@ -3,6 +3,8 @@ package io.github.bernardusz.cms.user;
 import io.github.bernardusz.cms.user.dto.UserDetail;
 import io.github.bernardusz.cms.user.dto.UserUpdateInformation;
 import io.github.bernardusz.cms.user.dto.UserUpdatePassword;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,11 +14,6 @@ public class UserController {
   private final UserService userService;
   public UserController(UserService userService) {
     this.userService = userService;
-  }
-
-  @GetMapping("/{userId}")
-  public UserDetail findById(@AuthenticationPrincipal UserSecurity user, @PathVariable Long userId) {
-    return userService.findById(user ,userId);
   }
 
   @PutMapping("/{userId}/information")

@@ -32,6 +32,7 @@ export async function action({ event }: PageServerAction) {
       event.node.res.setHeader('set-cookie', setCookie);
     }
 
+    console.log("Successfully logged in");
     return redirect('/');
   }
 

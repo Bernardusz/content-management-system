@@ -9,11 +9,14 @@ import {
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideFileRouter, requestContextInterceptor } from '@analogjs/router';
 import { authInterceptor } from '@/interceptors/auth.interceptor';
+import { withComponentInputBinding } from '@angular/router';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideFileRouter(),
+    provideFileRouter(
+      withComponentInputBinding(),
+    ),
     provideHttpClient(
       withInterceptors([authInterceptor, requestContextInterceptor])
     ),

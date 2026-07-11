@@ -50,10 +50,8 @@ public class SecurityConfig {
 						"/api/auth/register",
 						"/api/auth/logout",
 						"/error"
-					)
-					.permitAll()
-					.anyRequest()
-					.authenticated()
+					).permitAll()
+					.anyRequest().authenticated()
 			)
 			.authenticationProvider(authenticationProvider())
 			.addFilterBefore(

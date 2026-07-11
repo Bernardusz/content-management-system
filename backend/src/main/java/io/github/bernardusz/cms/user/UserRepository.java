@@ -93,7 +93,7 @@ public class UserRepository {
     jdbcClient.sql(
       """
       UPDATE users SET
-        username = :username
+        username = :username,
         email = :email
       WHERE id = :userId
       """

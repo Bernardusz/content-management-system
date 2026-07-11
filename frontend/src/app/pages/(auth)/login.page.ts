@@ -26,6 +26,7 @@ export const routeMeta: RouteMeta = {
 				<form
 					id="login-form"
 					method="post"
+					#loginForm
 					class="flex flex-col gap-4"
 				>
 					<div
@@ -47,7 +48,7 @@ export const routeMeta: RouteMeta = {
 					</div>
 
 					<hlm-card-footer class="flex-col gap-2">
-						<button hlmBtn type="submit" class="w-full" form="login-form">Login</button>
+						<button hlmBtn [disabled]="loginForm['isSubmitting']" type="submit" class="w-full" form="login-form">Login</button>
 						<a routerLink="/signup" hlmBtn variant="outline" class="w-full">Sign up instead</a>
 					</hlm-card-footer>
 				</form>
@@ -56,9 +57,4 @@ export const routeMeta: RouteMeta = {
 		</section>
 	`,
 })
-export default class AppSignupPage {
-    private authService = inject(AuthService);
-    private router = inject(Router);
-
-    isSubmitting = signal(false);
-}
+export default class AppLoginPage {}

@@ -2,9 +2,12 @@ package io.github.bernardusz.cms.user;
 
 import io.github.bernardusz.cms.exception.exceptions.NotAuthorizedException;
 import io.github.bernardusz.cms.exception.exceptions.UserNotFound;
+import io.github.bernardusz.cms.user.dto.UserCreation;
 import io.github.bernardusz.cms.user.dto.UserDetail;
 import io.github.bernardusz.cms.user.dto.UserUpdateInformation;
 import io.github.bernardusz.cms.user.dto.UserUpdatePassword;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,8 +16,10 @@ import java.util.Optional;
 @Service
 public class UserService {
   private final UserRepository userRepository;
-  public UserService(UserRepository userRepository) {
+  private final PasswordEncoder passwordEncoder;
+  public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
   }
 
   @Transactional
@@ -48,7 +53,13 @@ public class UserService {
         "You are not authorized to look into this endpoint"
       );
     }
-    userRepository.updatePassword(userId, userUpdatePassword);
+    String hashedPassword = passwordEncoder.encode(userUpdatePassword.password());
+		userRepository.updatePassword(
+      userId,
+			new UserUpdatePassword(
+				hashedPassword
+			)
+		);
   }
 
   public void deleteById(UserSecurity user,Long userId){
