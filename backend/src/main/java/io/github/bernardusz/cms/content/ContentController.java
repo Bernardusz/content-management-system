@@ -17,7 +17,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/contents")
+@RequestMapping("/api/contents")
 public class ContentController {
   private final ContentService contentService;
 

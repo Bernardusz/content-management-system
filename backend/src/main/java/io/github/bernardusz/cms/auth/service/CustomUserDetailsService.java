@@ -4,7 +4,9 @@ import io.github.bernardusz.cms.user.UserRepository;
 import io.github.bernardusz.cms.user.UserSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CustomUserDetailsService implements UserDetailsService {
   private final UserRepository userRepository;
   public CustomUserDetailsService(UserRepository userRepository) {
@@ -19,6 +21,8 @@ public class CustomUserDetailsService implements UserDetailsService {
   }
 
   public UserSecurity loadUserById(String userId) throws UsernameNotFoundException {
-    return loadUserByUsername(userId);
+    return userRepository.findByIdSecurity(Long.parseLong(userId))
+    .map(UserSecurity::new)
+    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
   }
 }

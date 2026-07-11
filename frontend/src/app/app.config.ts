@@ -8,13 +8,14 @@ import {
 } from '@angular/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideFileRouter, requestContextInterceptor } from '@analogjs/router';
+import { authInterceptor } from '@/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideFileRouter(),
     provideHttpClient(
-      withInterceptors([requestContextInterceptor])
+      withInterceptors([authInterceptor, requestContextInterceptor])
     ),
     provideClientHydration(withEventReplay()),
   ],

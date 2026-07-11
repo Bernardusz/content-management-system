@@ -83,8 +83,8 @@ public class JwtService {
     return Jwts.parser()
       .verifyWith(getSigningKey())
       .build()
-      .parseClaimsJws(token)
-      .getBody();
+      .parseSignedClaims(token)
+      .getPayload();
   }
 
   public SecretKey getSigningKey() {
@@ -120,7 +120,7 @@ public class JwtService {
       System.arraycopy(iv, 0, combined, 0, iv.length);
       System.arraycopy(encryptedBytes, 0, combined, iv.length, encryptedBytes.length);
       
-      return bytesToHex(combined).substring(0, 64);
+      return bytesToHex(combined);
     } catch (Exception e) {
       throw new RuntimeException("Failed to generate encrypted refresh token", e);
     }

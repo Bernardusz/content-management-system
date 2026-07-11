@@ -24,7 +24,7 @@ public class AuthRepository {
       .param("userId", userId)
       .param("tokenHash", tokenHash)
       .param("salt", salt)
-      .param("expiresAt", expiresAt)
+      .param("expiresAt", java.sql.Timestamp.from(expiresAt))
       .update();
   }
 

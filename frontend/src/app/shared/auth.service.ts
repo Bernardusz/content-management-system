@@ -38,6 +38,7 @@ export default class AuthService {
             tap((response) => {
                 this.isAuthenticated.set(response === null ? false : true);
                 this.currentUser.set(response);
+                console.log(response)
             }),
             map((response) => {
                 return response === null ? false : true;

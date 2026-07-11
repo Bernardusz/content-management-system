@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
   private final AuthService authService;
   private final UserService userService;
@@ -33,7 +33,7 @@ public class AuthController {
 
   @GetMapping("/me")
   public ResponseEntity<UserDetail> getUser(@AuthenticationPrincipal UserSecurity user) {
-    String username = user.getUsername() == null ? "anonymousUser" : user.getUsername();
+    String username = (user == null || user.getUsername() == null) ? "anonymousUser" : user.getUsername();
 
     return user == null || "anonymousUser".equals(username) ?
       ResponseEntity.ok().build() :
@@ -52,7 +52,7 @@ public class AuthController {
         .secure(true)
         .path("/")
         .maxAge(loginResponse.expiresIn() / 1000)
-        .sameSite("Strict")
+        .sameSite("Lax")
         .build();
 
     ResponseCookie refreshTokenCookie = ResponseCookie.from("REFRESH-TOKEN", loginResponse.refreshToken())
@@ -60,7 +60,7 @@ public class AuthController {
         .secure(true)
         .path("/")
         .maxAge(loginResponse.refreshTokenExpiresIn() / 1000)
-        .sameSite("Strict")
+        .sameSite("Lax")
         .build();
 
     response.addHeader("Set-Cookie", accessTokenCookie.toString());
@@ -98,7 +98,7 @@ public class AuthController {
         .secure(true)
         .path("/")
         .maxAge(loginResponse.expiresIn() / 1000)
-        .sameSite("Strict")
+        .sameSite("Lax")
         .build();
 
     ResponseCookie refreshTokenCookie = ResponseCookie.from("REFRESH-TOKEN", loginResponse.refreshToken())
@@ -106,7 +106,7 @@ public class AuthController {
         .secure(true)
         .path("/")
         .maxAge(loginResponse.refreshTokenExpiresIn() / 1000)
-        .sameSite("Strict")
+        .sameSite("Lax")
         .build();
 
     response.addHeader("Set-Cookie", accessTokenCookie.toString());
@@ -122,7 +122,7 @@ public class AuthController {
         .secure(true)
         .path("/")
         .maxAge(0)
-        .sameSite("Strict")
+        .sameSite("Lax")
         .build();
 
     ResponseCookie refreshTokenCookie = ResponseCookie.from("REFRESH-TOKEN", "")
@@ -130,7 +130,7 @@ public class AuthController {
         .secure(true)
         .path("/")
         .maxAge(0)
-        .sameSite("Strict")
+        .sameSite("Lax")
         .build();
 
     response.addHeader("Set-Cookie", accessTokenCookie.toString());

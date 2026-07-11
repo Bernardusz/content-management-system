@@ -38,6 +38,15 @@ public class UserRepository {
       .optional();
   }
 
+  public Optional<User> findByIdSecurity(Long userId){
+    return jdbcClient.sql(
+      """
+      SELECT * FROM users
+      WHERE id = :userId    
+      """
+    ).param("userId", userId).query(User.class).optional();
+  }
+
   public Optional<User> findUserByRefreshTokenSecurity(String tokenHash){
     return jdbcClient.sql(
         """

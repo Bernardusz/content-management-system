@@ -51,8 +51,8 @@ public class AuthService {
 		userRepository.save(
 			new UserCreation(
 				userCreation.username(),
-				hashedPassword,
-				userCreation.email()
+				userCreation.email(),
+				hashedPassword
 			)
 		);
 	}
