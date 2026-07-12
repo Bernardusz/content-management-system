@@ -31,9 +31,9 @@ export const routeMeta: RouteMeta = {
 				>
 					<div
 						hlmCardContent
+						(onSuccess)="onLoginSuccess($event)"
 						class="flex flex-col gap-4"
 					>
-						
 							<div class="flex flex-col gap-6">
 								<div class="grid gap-2">
 									<label hlmLabel for="username">Username</label>
@@ -57,4 +57,9 @@ export const routeMeta: RouteMeta = {
 		</section>
 	`,
 })
-export default class AppLoginPage {}
+export default class AppLoginPage {
+	private router = inject(Router)
+	onLoginSuccess(event: any) {
+		this.router.navigate(["/"]);
+	}
+}

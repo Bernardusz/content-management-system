@@ -3,6 +3,8 @@ package io.github.bernardusz.cms.comment;
 import io.github.bernardusz.cms.comment.dto.CommentCreation;
 import io.github.bernardusz.cms.comment.dto.CommentDetail;
 import io.github.bernardusz.cms.comment.dto.CommentUpdate;
+import io.github.bernardusz.cms.exception.exceptions.CommentNotFound;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,13 @@ public class CommentService {
   @Transactional
   public Optional<Long> save(CommentCreation commentCreation) {
     return commentRepository.save(commentCreation);
+  }
+
+  @Transactional(readOnly = true)
+  public CommentDetail findById(Long id, Long userId) {
+    return commentRepository.findById(id, userId).orElseThrow(
+        () -> new CommentNotFound("Comment isn't found")
+    );
   }
 
   @Transactional(readOnly = true)

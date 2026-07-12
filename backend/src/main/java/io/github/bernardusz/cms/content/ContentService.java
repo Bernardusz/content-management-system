@@ -24,8 +24,8 @@ public class ContentService {
   }
 
   @Transactional(readOnly = true)
-  public List<ContentSummary> findAllWithFilter(String identifier, int limit, int offsets){
-    return contentRepository.findAllWithFilter(identifier, limit, offsets);
+  public List<ContentSummary> findAllWithFilter(Long userId, String identifier, int limit, int offsets){
+    return contentRepository.findAllWithFilter(userId, identifier, limit, offsets);
   }
 
   @Transactional(readOnly = true)

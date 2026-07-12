@@ -9,16 +9,21 @@ import {
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideFileRouter, requestContextInterceptor } from '@analogjs/router';
 import { authInterceptor } from '@/interceptors/auth.interceptor';
-import { withComponentInputBinding } from '@angular/router';
+import { withComponentInputBinding, withNavigationErrorHandler, withRouterConfig } from '@angular/router';
+import { refreshTokenInterceptor } from './interceptors/refresh-token.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideFileRouter(
       withComponentInputBinding(),
+      withNavigationErrorHandler(console.error),
+      withRouterConfig({
+        onSameUrlNavigation: 'reload',
+      })
     ),
     provideHttpClient(
-      withInterceptors([authInterceptor, requestContextInterceptor])
+      withInterceptors([authInterceptor, refreshTokenInterceptor, requestContextInterceptor])
     ),
     provideClientHydration(withEventReplay()),
   ],

@@ -52,6 +52,13 @@ public class CommentController {
     );
   }
 
+  @GetMapping("/{id}")
+  public ResponseEntity<CommentDetail> findById(@PathVariable Long id, @AuthenticationPrincipal UserSecurity user) {
+    return ResponseEntity.ok(
+        commentService.findById(id, user.getId())
+    );
+  }
+
   @PutMapping("/{id}")
   public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody CommentUpdate commentUpdate) {
     commentService.updateById(id, commentUpdate);

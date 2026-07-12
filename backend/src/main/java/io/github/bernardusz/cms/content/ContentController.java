@@ -45,12 +45,13 @@ public class ContentController {
 
   @GetMapping
   public ResponseEntity<List<ContentSummary>> findAll(
+      @AuthenticationPrincipal UserSecurity user,
       @RequestParam(required = false) String identifier,
       @RequestParam(defaultValue = "10") int limit,
       @RequestParam(defaultValue = "0") int offset
   ) {
     return ResponseEntity.ok(
-        contentService.findAllWithFilter(identifier, limit, offset)
+        contentService.findAllWithFilter(user.getId(), identifier, limit, offset)
     );
   }
 

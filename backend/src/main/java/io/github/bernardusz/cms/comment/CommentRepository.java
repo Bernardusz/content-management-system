@@ -33,6 +33,32 @@ public class CommentRepository {
         .optional();
   }
 
+  public Optional<CommentDetail> findById(Long id, Long userId) {
+    return jdbcClient.sql(
+        """
+        SELECT
+          c.id,
+          c.title,
+          c.content,
+          c.created_at,
+          c.edited,
+          c.likes_count,
+          c.dislikes_count,
+          c.user_id,
+          c.content_id,
+          cl.user_id IS NOT NULL AS alreadyLiked,
+          cd.user_id IS NOT NULL AS alreadyDisliked
+        FROM comments c
+       LEFT JOIN comment_likes cl ON c.id = cl.comment_id AND cl.user_id = :userId
+       LEFT JOIN comment_dislikes cd ON c.id = cd.comment_id AND cd.user_id = :userId
+        WHERE c.id = :id
+        """
+    ).param("id", id)
+    .param("userId", userId)
+    .query(CommentDetail.class)
+    .optional();
+}
+
   public List<CommentDetail> findPagination(Long contentId, Long userId, int limit, int offsets){
     return jdbcClient.sql(
         """
@@ -55,7 +81,7 @@ public class CommentRepository {
         ORDER BY
           c.likes_count DESC,
           c.dislikes_count ASC,
-          c.updated_at DESC
+          c.created_at DESC
         LIMIT :limit OFFSET :offsets;
         """
     ).param("contentId", contentId)

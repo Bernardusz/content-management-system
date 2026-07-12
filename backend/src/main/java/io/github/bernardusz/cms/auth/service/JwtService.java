@@ -99,31 +99,41 @@ public class JwtService {
     return refreshTokenExpiration;
   }
 
-  public String generateEncryptedRefreshToken() {
+  public Map<String, String> generateEncryptedRefreshToken(Long userId) {
+    String sessionId = UUID.randomUUID().toString();
+    String payloadString = userId + ":" + sessionId + ":" + UUID.randomUUID().toString();
+    // UserID for identifying the user
+    // First random string for session id
+    // Last one is the token
+    return Map.of(
+      "token", encryptRefreshToken(payloadString),
+      "sessionId", sessionId
+    );
+  }
+
+  public String encryptRefreshToken(String payloadString) {
     try {
-      UUID uuid = UUID.randomUUID();
-      String uuidString = uuid.toString();
-      
-      byte[] keyBytes = Decoders.BASE64.decode(secret);
-      SecretKey aesKey = new SecretKeySpec(keyBytes, "AES");
-      
-      SecureRandom random = new SecureRandom();
-      byte[] iv = new byte[12];
-      random.nextBytes(iv);
-      
-      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-      cipher.init(Cipher.ENCRYPT_MODE, aesKey, new javax.crypto.spec.GCMParameterSpec(128, iv));
-      
-      byte[] encryptedBytes = cipher.doFinal(uuidString.getBytes());
-      
-      byte[] combined = new byte[iv.length + encryptedBytes.length];
-      System.arraycopy(iv, 0, combined, 0, iv.length);
-      System.arraycopy(encryptedBytes, 0, combined, iv.length, encryptedBytes.length);
-      
-      return bytesToHex(combined);
+        // Embed the userId directly into the unencrypted string payload
+        
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        SecretKey aesKey = new SecretKeySpec(keyBytes, "AES");
+        
+        SecureRandom random = new SecureRandom();
+        byte[] iv = new byte[12];
+        random.nextBytes(iv);
+        
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, aesKey, new javax.crypto.spec.GCMParameterSpec(128, iv));
+        
+        byte[] encryptedBytes = cipher.doFinal(payloadString.getBytes());
+        byte[] combined = new byte[iv.length + encryptedBytes.length];
+        System.arraycopy(iv, 0, combined, 0, iv.length);
+        System.arraycopy(encryptedBytes, 0, combined, iv.length, encryptedBytes.length);
+        
+        return bytesToHex(combined);
     } catch (Exception e) {
-      throw new RuntimeException("Failed to generate encrypted refresh token", e);
-    }
+        throw new RuntimeException("Failed to generate token", e);
+    } 
   }
 
   public String generateSalt() {

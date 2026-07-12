@@ -8,7 +8,9 @@ import { RouterLink } from "@angular/router";
     imports: [RouterLink],
     template: `
     <header class="flex flex-row justify-between items-center py-6 px-4">
-        <h1>CMS</h1>
+        <h1>
+            <a routerLink="/" class="text-primary">CMS</a>
+        </h1>
         
         @if (this.username()){
             <h3>Hello, 

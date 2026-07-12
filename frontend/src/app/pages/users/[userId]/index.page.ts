@@ -213,8 +213,14 @@ export default class ProfilePage {
     onPasswordSuccess(response: any){
         this.isSubmitting.set(false);       
         this.isEditing.set(false);    
-        this.authService.logOut().subscribe();
-        this.router.navigate(["/login"]);
+        this.authService.logOut().subscribe({
+            next: () => {
+                this.router.navigate(["/login"]);
+            },
+            error: (error) => {
+                console.error("Caught error: ", error);
+            },
+        });
     }
 
     logOut(){
@@ -230,8 +236,11 @@ export default class ProfilePage {
             this.isSubmitting.set(true);
             this.userService.deleteUser(this.userId).subscribe({
                 next: () => {
-                    this.authService.logOut().subscribe();
-                    this.router.navigate(["/login"]);
+                    this.authService.logOut().subscribe({
+                        next: () => {
+                            this.router.navigate(["/login"]);
+                        }
+                    });
                 },
                 error: (error) => {
                     console.error("Caught error: ", error);

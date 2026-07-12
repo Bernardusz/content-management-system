@@ -36,7 +36,7 @@ public class ContentRepository {
         .optional();
   }
 
-  public List<ContentSummary> findAllWithFilter(String identifier, int limit, int offsets){
+  public List<ContentSummary> findAllWithFilter(Long userId, String identifier, int limit, int offsets){
     String whereClause = identifier != null ? "%" + identifier + "%" : null;
     return jdbcClient.sql(
         """
@@ -51,7 +51,8 @@ public class ContentRepository {
           dislikes_count,
           user_id
         FROM contents
-        WHERE whereClause IS NULL OR title ILIKE :whereClause OR description ILIKE :whereClause
+        WHERE (:whereClause::text IS NULL OR title ILIKE :whereClause OR description ILIKE :whereClause) AND
+        (is_private = false OR user_id = :userId)
         ORDER BY
           likes_count DESC,
           comments_count DESC,
@@ -62,6 +63,7 @@ public class ContentRepository {
     ).param("whereClause", whereClause)
         .param("limit", limit)
         .param("offsets", offsets)
+        .param("userId", userId)
         .query(ContentSummary.class)
         .list();
   }

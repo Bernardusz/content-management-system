@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens(
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token_hash VARCHAR(255) NOT NULL,
     salt VARCHAR(255) NOT NULL,
+    session_id VARCHAR(255) NOT NULL,
     expires_at TIMESTAMP NOT NULL
 );
 
@@ -24,7 +25,7 @@ CREATE TABLE IF NOT EXISTS contents (
     comments_count INT NOT NULL DEFAULT 0,
     likes_count INT NOT NULL DEFAULT 0,
     dislikes_count INT NOT NULL DEFAULT 0,
-    private BOOLEAN NOT NULL DEFAULT FALSE,
+    is_private BOOLEAN NOT NULL DEFAULT FALSE,
     user_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -78,5 +79,5 @@ CREATE TABLE IF NOT EXISTS comment_dislikes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_identity ON users(username, email);
-CREATE INDEX IF NOT EXISTS idx_contents_feed ON contents(private, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_refresh_tokens_hash ON refresh_tokens(token_hash, user_id);
+CREATE INDEX IF NOT EXISTS idx_contents_feed ON contents(is_private, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_hash ON refresh_tokens(token_hash, user_id, session_id);

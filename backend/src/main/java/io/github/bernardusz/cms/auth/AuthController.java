@@ -114,7 +114,22 @@ public class AuthController {
   }
 
   @PostMapping("/logout")
-  public ResponseEntity<String> logout(@AuthenticationPrincipal UserSecurity user, HttpServletResponse response) {
+  public ResponseEntity<String> logout(HttpServletResponse response, HttpServletRequest request) {
+
+    String refreshToken = null;
+    if (request.getCookies() != null){
+      for (Cookie cookie : request.getCookies()){
+        if ("REFRESH-TOKEN".equals(cookie.getName())){
+          refreshToken = cookie.getValue();
+          break;
+        }
+      }
+    }
+
+    if (refreshToken != null){
+      authService.revokeRefreshToken(refreshToken);
+    }
+
     ResponseCookie accessTokenCookie = ResponseCookie.from("AUTH-TOKEN", "")
         .httpOnly(true)
         .secure(true)

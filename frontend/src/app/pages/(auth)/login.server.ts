@@ -33,7 +33,7 @@ export async function action({ event }: PageServerAction) {
     }
 
     console.log("Successfully logged in");
-    return redirect('/');
+    return {success: true};
   }
 
   return fail(422, { error: 'Form submission failed' });

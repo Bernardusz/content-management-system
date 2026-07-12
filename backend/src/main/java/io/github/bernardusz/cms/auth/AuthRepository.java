@@ -15,14 +15,15 @@ public class AuthRepository {
     this.jdbcClient = jdbcClient;
   }
 
-  public void saveRefreshToken(Long userId, String tokenHash, String salt, long expiresIn) {
+  public void saveRefreshToken(Long userId, String tokenHash, String sessionId, String salt, long expiresIn) {
     Instant expiresAt = Instant.now().plusMillis(expiresIn);
     jdbcClient.sql("""
-      INSERT INTO refresh_tokens (user_id, token_hash, salt, expires_at)
-      VALUES (:userId, :tokenHash, :salt, :expiresAt)
+      INSERT INTO refresh_tokens (user_id, token_hash, salt, session_id ,expires_at)
+      VALUES (:userId, :tokenHash, :salt, :sessionId, :expiresAt)
       """)
       .param("userId", userId)
       .param("tokenHash", tokenHash)
+      .param("sessionId", sessionId)
       .param("salt", salt)
       .param("expiresAt", java.sql.Timestamp.from(expiresAt))
       .update();
@@ -47,6 +48,20 @@ public class AuthRepository {
       .optional();
   }
 
+  public Optional<RefreshTokenInfo> findRefreshTokenBySessionIdAndUserId(String sessionId, Long userId) {
+    return jdbcClient.sql("""
+      SELECT id, user_id, token_hash, salt, expires_at
+      FROM refresh_tokens
+      WHERE session_id = :sessionId AND user_id = :userId
+      ORDER BY expires_at DESC
+      LIMIT 1  
+    """)
+    .param("sessionId", sessionId)
+    .param("userId", userId)
+    .query(RefreshTokenInfo.class)
+    .optional();
+  }
+
   public Optional<RefreshTokenInfo> findRefreshToken(String tokenHash) {
     return jdbcClient.sql("""
       SELECT id, user_id, token_hash, salt, expires_at
@@ -64,9 +79,10 @@ public class AuthRepository {
       .optional();
   }
 
-  public void deleteRefreshToken(String tokenHash) {
-    jdbcClient.sql("DELETE FROM refresh_tokens WHERE token_hash = :tokenHash")
-      .param("tokenHash", tokenHash)
+  public void deleteRefreshTokenBySessionIdAndUserId(String sessionId, Long userId) {
+    jdbcClient.sql("DELETE FROM refresh_tokens WHERE session_id = :sessionId AND user_id = :userId")
+      .param("sessionId", sessionId)
+      .param("userId", userId)
       .update();
   }
 
@@ -75,6 +91,4 @@ public class AuthRepository {
       .param("now", Instant.now())
       .update();
   }
-
-
 }

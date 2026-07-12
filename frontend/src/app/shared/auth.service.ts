@@ -52,7 +52,7 @@ export default class AuthService {
     }
 
     refreshToken(): Observable<void> {
-        return this.http.post<void>(`${this.baseUrl}/auth/refresh`, {});
+        return this.http.post<void>(`${this.baseUrl}/auth/refresh`, { withCredentials: true });
     }
 
     logOut(): Observable<void> {

@@ -2,6 +2,7 @@ package io.github.bernardusz.cms.exception;
 
 import io.github.bernardusz.cms.exception.dto.ErrorResponse;
 import io.github.bernardusz.cms.exception.exceptions.NotAuthorizedException;
+import io.github.bernardusz.cms.exception.exceptions.RefreshTokenException;
 import io.github.bernardusz.cms.exception.exceptions.UserNotFound;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,16 @@ public class GlobalExceptionHandler {
       .body(new ErrorResponse(
         "You are not allowed to look here",
         HttpStatus.NOT_FOUND.value(),
+        LocalDateTime.now()
+      ));
+  }
+
+  @ExceptionHandler(RefreshTokenException.class)
+  public ResponseEntity<ErrorResponse> handleRefreshToken(){
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .body(new ErrorResponse(
+        "Something went wrong",
+        HttpStatus.INTERNAL_SERVER_ERROR.value(),
         LocalDateTime.now()
       ));
   }
