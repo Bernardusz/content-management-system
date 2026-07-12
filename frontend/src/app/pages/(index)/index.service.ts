@@ -6,7 +6,7 @@ import { Observable } from "rxjs";
 @Injectable({
 	providedIn: "root",
 
-	
+
 })
 export default class IndexService {
 	private http = inject(HttpClient);
@@ -17,11 +17,9 @@ export default class IndexService {
         
         const params = new HttpParams()
             .set("offset", currentOffset)
-            .set("limit", "10");
+            .set("limit", "10")
+			.set("identifier", searchQuery || "");
 
-        if (searchQuery) {
-            params.set("search", searchQuery);
-        }
 		return this.http.get<ContentSummary[]>(`${this.url}`, {
 			params,
 		});

@@ -11,7 +11,7 @@
 - Rotating Refresh Token
 
 ## 🌟 Goal
-Let Hibernate manage the table creation and relationship mapping.
+Master Rotating Refresh Token
 
 ## ❓ Why
 Understand what ORM hide from us, and the tradeoffs

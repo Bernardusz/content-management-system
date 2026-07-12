@@ -88,7 +88,7 @@ export default class ContentsPage {
     pageSize = 10; // Change this to match whatever your backend limits (e.g., 5, 10, 20)
     
     // Tracks current clean text search criteria value frames across page shifts
-    private currentSearchQuery = '';
+    private currentSearchQuery = signal<string>("");
 
     private searchSubject = new Subject<string>();
     private indexService = inject(IndexService);
@@ -97,7 +97,7 @@ export default class ContentsPage {
         this.searchSubject
             .pipe(debounceTime(1000), distinctUntilChanged())
             .subscribe((searchTerm) => {
-                this.currentSearchQuery = searchTerm.trim();
+                this.currentSearchQuery.set(searchTerm.trim());
                 // When searching a brand new phrase value, reset viewport frame focus back to Page 1
                 this.currentPage.set(1); 
                 this.fetchCurrentPageData();
@@ -119,14 +119,17 @@ export default class ContentsPage {
         if (!this.currentSearchQuery) {
             // Optional: If no query terms are typed, fetch basic root context page listings if supported,
             // or restore initial load arrays directly if you only fetch once.
-            this.indexService.searchCredentials("", this.currentPage()).subscribe({
-                next: (data) => this.data.set(data),
+            this.indexService.searchCredentials(this.currentSearchQuery, this.currentPage()).subscribe({
+                next: (data) => {
+                  this.data.set(data);
+                  console.log(data);
+                },
                 error: (err) => console.error("Pagination load exception caught:", err)
             });
             return;
         }
 
-        this.indexService.searchCredentials(this.currentSearchQuery, this.currentPage()).subscribe({
+        this.indexService.searchCredentials(this.currentSearchQuery(), this.currentPage()).subscribe({
             next: (data) => {
                 this.data.set(data);
             },
